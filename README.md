@@ -8,3 +8,4 @@ You can install the package using pip:
 
 ```sh
 pip install db_connect
+```
