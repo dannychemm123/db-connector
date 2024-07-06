@@ -4,7 +4,7 @@ import sys
 import os
 import pytest
 from pymongo.errors import ServerSelectionTimeoutError
-from ...src.db_connect import MongoDBOperation
+from db_connect import MongoDBOperation
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 

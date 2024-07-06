@@ -5,8 +5,8 @@ import os
 import pytest
 from mysql.connector.errors import InterfaceError
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
-from ...src.db_connect import MySQLDBOperation
-#from db_connect.sql_crud import MySQLDBOperation
+#from ...src.db_connect import MySQLDBOperation
+from db_connect.sql_crud import MySQLDBOperation
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
