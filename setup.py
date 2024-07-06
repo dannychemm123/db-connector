@@ -6,8 +6,8 @@ with open('README.md', 'r', encoding='utf-8') as f:
    
 
 __version__ = "0.0.1"
-REPO_NAME = "db-connect"
-PKG_NAME= "db-connect"
+REPO_NAME = "db_connector"
+PKG_NAME= "db_connect"
 AUTHOR_USER_NAME = "dannychemm123"
 AUTHOR_EMAIL = "dannychemm121@gmail.com"
 
