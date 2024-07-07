@@ -28,6 +28,7 @@ def test_insert_record(mongodb_client):
         mongodb_client.insert_record(record, "students")
         result = mongodb_client.find({"name": "Gilbert"}, "students")
         assert len(result) == 1
+        assert result[0]['name'] == 'Gilbert'
     except ServerSelectionTimeoutError:
         pytest.skip("MongoDB server is not available")
 
@@ -50,6 +51,7 @@ def test_find(mongodb_client):
         mongodb_client.insert_record({"name": "Philip", "age": 30, "sex": "male", "class": "level 300"}, "students")
         result = mongodb_client.find({"name": "Philip"}, "students")
         assert len(result) == 1
+        assert result[0]['name'] == 'Philip'
     except ServerSelectionTimeoutError:
         pytest.skip("MongoDB server is not available")
 
@@ -85,6 +87,6 @@ def test_update(mongodb_client):
         mongodb_client.insert_record(record, "students")
         mongodb_client.update({"name": "Jane"}, {"age": 26}, "students")
         result = mongodb_client.find({"name": "Jane"}, "students")
-        assert result[0]["age"] == 26
+        assert result['age'] == 26
     except ServerSelectionTimeoutError:
         pytest.skip("MongoDB server is not available")
