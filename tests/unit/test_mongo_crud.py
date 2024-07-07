@@ -79,7 +79,6 @@ def test_delete(mongodb_client):
     except ServerSelectionTimeoutError:
         pytest.skip("MongoDB server is not available")
 
-
 def test_update(mongodb_client):
     record = {"name": "Jane", "age": 25, "sex": "female", "class": "level 400"}
     try:
@@ -87,6 +86,7 @@ def test_update(mongodb_client):
         mongodb_client.insert_record(record, "students")
         mongodb_client.update({"name": "Jane"}, {"age": 26}, "students")
         result = mongodb_client.find({"name": "Jane"}, "students")
-        assert result['age'] == 26
+        assert len(result) == 1
+        assert result[0]["age"] == 26
     except ServerSelectionTimeoutError:
         pytest.skip("MongoDB server is not available")
