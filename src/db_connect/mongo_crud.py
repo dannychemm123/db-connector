@@ -125,10 +125,8 @@ class MongoDBOperation:
 
         collection = self.create_collection(collection_name)
         query = query or {}
-        result = collection.find_one(query)
-        if not result:
-            raise ValueError("No matching documents found.")
-        return result
+        result = collection.find(query)
+        return list(result)
 
     def delete(self, query: Optional[Dict[str, Any]] = None, collection_name: Optional[str] = None) -> None:
         """
