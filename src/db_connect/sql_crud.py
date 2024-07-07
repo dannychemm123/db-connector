@@ -2,13 +2,35 @@
 
 import mysql.connector
 from mysql.connector import Error
-from typing import Dict, Any
+from typing import Dict, Any, Optional, List
 import pandas as pd
 
 
 class MySQLDBOperation:
     """
     MySQL operations for creating connection and performing CRUD operations.
+
+    Attributes:
+    - host (str): The host for the MySQL database.
+    - user (str): The username for the MySQL database.
+    - password (str): The password for the MySQL database.
+    - database (str): The name of the MySQL database.
+
+    Methods:
+    - create_connection() -> mysql.connector.connection.MySQLConnection:
+        Creates and returns a MySQL database connection.
+    - execute_query(query: str) -> None:
+        Executes a single query in the database.
+    - insert_record(table: str, record: Dict[str, Any]) -> None:
+        Inserts a single record into the specified table.
+    - bulk_insert(table: str, datafile: str) -> None:
+        Bulk inserts records from a file (CSV or Excel) into the specified table.
+    - find(query: Optional[str] = None, table: Optional[str] = None) -> List[Dict[str, Any]]:
+        Finds and returns records matching the query from the specified table. Returns all records if no query is provided.
+    - delete(condition: Optional[str] = None, table: Optional[str] = None) -> None:
+        Deletes records matching the condition from the specified table. Deletes all records if no condition is provided.
+    - update(table: str, updates: Dict[str, Any], condition: str) -> None:
+        Updates records matching the condition with the specified updates in the specified table.
     """
 
     def __init__(self, host: str, user: str, password: str, database: str):
@@ -35,7 +57,7 @@ class MySQLDBOperation:
             print(f"The error '{e}' occurred")
         return connection
 
-    def execute_query(self, query: str):
+    def execute_query(self, query: str) -> None:
         """
         Executes a single query in the database.
         """
@@ -48,23 +70,38 @@ class MySQLDBOperation:
         except Error as e:
             print(f"The error '{e}' occurred")
 
-    def insert_record(self, table: str, record: Dict[str, Any]):
-        """
-        Inserts a single record into the specified table.
-        """
+    def insert_record(self, table: str, record: Any) -> None:
+    
         connection = self.create_connection()
         cursor = connection.cursor()
-        columns = ", ".join(record.keys())
-        values = ", ".join(["%s"] * len(record))
-        sql = f"INSERT INTO {table} ({columns}) VALUES ({values})"
-        try:
+
+        def execute_insert(record: Dict[str, Any]) -> None:
+            columns = ", ".join(record.keys())
+            values = ", ".join(["%s"] * len(record))
+            sql = f"INSERT INTO {table} ({columns}) VALUES ({values})"
             cursor.execute(sql, tuple(record.values()))
+
+        try:
+            if isinstance(record, list):
+                for rec in record:
+                    if not isinstance(rec, dict):
+                        raise TypeError("Each record must be a dictionary")
+                    execute_insert(rec)
+            elif isinstance(record, dict):
+                execute_insert(record)
+            else:
+                raise TypeError("Record must be a dictionary or a list of dictionaries")
+            
             connection.commit()
-            print("Record inserted successfully")
+            print("Record(s) inserted successfully")
         except Error as e:
             print(f"The error '{e}' occurred")
+        finally:
+            cursor.close()
+            connection.close()
 
-    def bulk_insert(self, table: str, datafile: str):
+
+    def bulk_insert(self, table: str, datafile: str) -> None:
         """
         Bulk inserts records from a file (CSV or Excel) into the specified table.
         """
@@ -78,24 +115,35 @@ class MySQLDBOperation:
         for record in records:
             self.insert_record(table, record)
 
-    def find(self, query: str):
+    def find(self, query: Optional[str] = None, table: Optional[str] = None) -> List[Dict[str, Any]]:
         """
-        Finds and returns records matching the query from the specified table.
+        Finds and returns records matching the query from the specified table. 
+        Returns all records if no query is provided.
         """
+        if query is None:
+            if table is None:
+                raise ValueError("Table name must be provided")
+            query = f"SELECT * FROM {table}"
         connection = self.create_connection()
         cursor = connection.cursor(dictionary=True)
         cursor.execute(query)
         result = cursor.fetchall()
         return result
 
-    def delete(self, table: str, condition: str):
+    def delete(self, condition: Optional[str] = None, table: Optional[str] = None) -> None:
         """
-        Deletes records matching the condition from the specified table.
+        Deletes records matching the condition from the specified table. 
+        Deletes all records if no condition is provided.
         """
-        query = f"DELETE FROM {table} WHERE {condition}"
+        if table is None:
+            raise ValueError("Table name must be provided")
+        if condition is None:
+            query = f"DELETE FROM {table}"
+        else:
+            query = f"DELETE FROM {table} WHERE {condition}"
         self.execute_query(query)
 
-    def update(self, table: str, updates: Dict[str, Any], condition: str):
+    def update(self, table: str, updates: Dict[str, Any], condition: str) -> None:
         """
         Updates records matching the condition with the specified updates in the specified table.
         """
